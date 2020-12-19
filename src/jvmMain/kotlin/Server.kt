@@ -1,8 +1,15 @@
+import WeekNoteList.Companion.weeks
+import com.fasterxml.jackson.databind.SerializationFeature
 import io.ktor.application.*
+import io.ktor.features.*
+import io.ktor.jackson.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
+import kotlinx.datetime.minus
+
+val weekNoteList = WeekNoteList("2002-04-30")
 
 fun main(args: Array<String>) {
     val env = applicationEngineEnvironment {
@@ -18,9 +25,24 @@ fun main(args: Array<String>) {
 }
 
 fun Application.main() {
+    install(ContentNegotiation) {
+        jackson {
+            enable(SerializationFeature.INDENT_OUTPUT)
+        }
+    }
+
     routing {
-        get("/") {
-            call.respondText("Hello, world!")
+        route(WeekNoteList.path) {
+            get {
+                println(weekNoteList.born)
+                println(WeekNoteList.nowDate())
+                println(WeekNoteList.nowDate().minus(weekNoteList.born).weeks())
+                call.respond(
+                    mapOf(
+                        "list" to weekNoteList.list
+                    )
+                )
+            }
         }
     }
 }
