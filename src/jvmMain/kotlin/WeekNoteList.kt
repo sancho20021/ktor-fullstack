@@ -13,7 +13,7 @@ data class WeekNoteList(
     constructor(dateOfBirth: String) : this(dateOfBirth.toLocalDate())
 
     companion object {
-        const val path = "/weekNoteList"
+        const val path = Paths.weekNoteListPath
         fun DatePeriod.weeks() = (this.years * 365 + this.days) / 7;
         fun nowDate() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     }
