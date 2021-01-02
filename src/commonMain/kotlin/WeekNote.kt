@@ -1,4 +1,4 @@
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class WeekNote(val desc: String = "")
+data class WeekNote(var desc: String = "")

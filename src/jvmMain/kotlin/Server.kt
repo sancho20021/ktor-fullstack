@@ -1,4 +1,3 @@
-import WeekNoteList.Companion.weeks
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
@@ -13,6 +12,7 @@ import kotlinx.datetime.minus
 val weekNoteList = WeekNoteList("2002-04-30")
 
 fun main(args: Array<String>) {
+    weekNoteList.list[0].desc = "День рождения"
     val env = applicationEngineEnvironment {
         module {
             main()
@@ -36,9 +36,6 @@ fun Application.main() {
     routing {
         route(WeekNoteList.path) {
             get {
-                println(weekNoteList.born)
-                println(WeekNoteList.nowDate())
-                println(WeekNoteList.nowDate().minus(weekNoteList.born).weeks())
                 call.respond(weekNoteList.list)
             }
         }

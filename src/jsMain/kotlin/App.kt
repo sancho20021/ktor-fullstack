@@ -26,12 +26,6 @@ val App = functionalComponent<RProps> { _ ->
             width = LinearDimension("100%")
             height = LinearDimension("100%")
         }
-        styledH1 {
-            css {
-                flex(0.0, 1.0, 30.px)
-            }
-            +"Life Calendar"
-        }
         styledDiv {
             css {
                 flex(1.0, 1.0)

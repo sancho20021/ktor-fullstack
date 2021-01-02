@@ -1,8 +1,11 @@
-import kotlinx.css.Color
-import kotlinx.css.backgroundColor
+import kotlinx.css.*
+import kotlinx.html.js.onClickFunction
 import react.*
+import react.dom.div
+import react.dom.p
 import react.dom.tr
 import styled.css
+import styled.styledDiv
 import styled.styledTable
 import styled.styledTd
 
@@ -10,14 +13,40 @@ external interface TableProps : RProps {
     var list: List<WeekNote>
 }
 
-class Table : RComponent<TableProps, RState>() {
-    val rows = 80
+external interface TableState : RState {
+    var textPopUpSeen: Boolean
+}
+
+class Table : RComponent<TableProps, TableState>() {
+    val rows = 90
     val columns = 52
+
+    fun togglePop() {
+        setState {
+            textPopUpSeen = !textPopUpSeen
+        }
+    }
+
+    override fun TableState.init() {
+        textPopUpSeen = false
+    }
+
     override fun RBuilder.render() {
+        styledDiv {
+            css {
+                zIndex = 100
+                position = Position.relative
+            }
+            if (state.textPopUpSeen) textPopUp {
+                toggle = { setState { textPopUpSeen = false } }
+            }
+        }
         styledTable {
             css {
                 +AppStyles.table
                 +AppStyles.tableTdTh
+                zIndex = 1
+                position = Position.absolute
             }
             for (row in 0 until rows) {
                 tr {
@@ -32,6 +61,7 @@ class Table : RComponent<TableProps, RState>() {
                                         else Color.yellow
                                     else Color.wheat
                             }
+                            attrs.onClickFunction = { setState { textPopUpSeen = true } }
                         }
                     }
                 }
