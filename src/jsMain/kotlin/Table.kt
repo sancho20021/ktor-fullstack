@@ -1,8 +1,7 @@
+import kotlinx.browser.window
 import kotlinx.css.*
 import kotlinx.html.js.onClickFunction
 import react.*
-import react.dom.div
-import react.dom.p
 import react.dom.tr
 import styled.css
 import styled.styledDiv
@@ -15,6 +14,7 @@ external interface TableProps : RProps {
 
 external interface TableState : RState {
     var textPopUpSeen: Boolean
+    var descIndex: Int?
 }
 
 class Table : RComponent<TableProps, TableState>() {
@@ -36,9 +36,23 @@ class Table : RComponent<TableProps, TableState>() {
             css {
                 zIndex = 100
                 position = Position.relative
+                top = LinearDimension("30%")
+                display = Display.flex
+                flexDirection = FlexDirection.column
+                justifyContent = JustifyContent.center
+                alignItems = Align.center
             }
-            if (state.textPopUpSeen) textPopUp {
-                toggle = { setState { textPopUpSeen = false } }
+            if (state.textPopUpSeen) {
+                textPopUp {
+                    toggle = { setState {
+                        textPopUpSeen = false
+                        descIndex = null
+                    } }
+                    text =
+                        if (state.descIndex != null)
+                            props.list[state.descIndex!!].desc
+                        else "Это будущая неделя!"
+                }
             }
         }
         styledTable {
@@ -61,7 +75,15 @@ class Table : RComponent<TableProps, TableState>() {
                                         else Color.yellow
                                     else Color.wheat
                             }
-                            attrs.onClickFunction = { setState { textPopUpSeen = true } }
+                            attrs.onClickFunction = {
+                                setState {
+                                    textPopUpSeen = true
+                                    descIndex =
+                                        if (index < props.list.size)
+                                            index
+                                        else null
+                                }
+                            }
                         }
                     }
                 }

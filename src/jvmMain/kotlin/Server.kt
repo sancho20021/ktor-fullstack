@@ -13,6 +13,7 @@ val weekNoteList = WeekNoteList("2002-04-30")
 
 fun main(args: Array<String>) {
     weekNoteList.list[0].desc = "День рождения"
+    weekNoteList.list[5].desc = "5 неделя с рождения\n перенос строки"
     val env = applicationEngineEnvironment {
         module {
             main()

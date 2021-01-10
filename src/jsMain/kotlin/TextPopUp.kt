@@ -1,41 +1,69 @@
+import kotlinx.browser.window
 import kotlinx.css.*
+import kotlinx.html.InputType
+import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
+import kotlinx.html.js.onSubmitFunction
+import org.w3c.dom.HTMLTextAreaElement
+import org.w3c.dom.events.Event
 import react.*
-import react.dom.div
-import react.dom.p
+import react.dom.*
 import styled.css
 import styled.styledDiv
 import styled.styledSpan
 
 external interface TextPopUpProps : RProps {
     var toggle: () -> Unit
+    var text: String
 }
 
-class TextPopUp : RComponent<TextPopUpProps, RState>() {
+val textPopUp = functionalComponent<TextPopUpProps> { props ->
+    val (text, setText) = useState(props.text)
+    val handleChange: (Event) -> Unit = {
+        setText((it.target as HTMLTextAreaElement).value)
+    }
 
-    override fun RBuilder.render() {
+    fun handleSubmit(text: String): (Event) -> Unit {
+        return {
+            window.alert("отправлено '${text}', никуда")
+            it.preventDefault()
+        }
+    }
+
+    styledDiv {
         styledDiv {
-            styledDiv {
+            css {
+                position = Position.absolute
+                backgroundColor = Color.white
+            }
+            styledSpan {
                 css {
-                    position = Position.absolute
+                    color = Color.red
                 }
-                styledSpan {
-                    css {
-                        color = Color.red
+                attrs.onClickFunction = { props.toggle() }
+                +"Close"
+            }
+            form {
+                attrs.onSubmitFunction = handleSubmit(text)
+                label {
+                    +"Описание недели:"
+                    textArea {
+                        attrs {
+                            value = text
+                            onChangeFunction = handleChange
+                        }
                     }
-                    attrs.onClickFunction = { props.toggle() }
-                    +"Close"
                 }
-                p {
-                    +"I'm a PopUp!!!"
+                input(InputType.submit) {
+                    attrs.value = "Сохранить"
                 }
             }
         }
     }
 }
 
-fun RBuilder.textPopUp(handler: TextPopUpProps.() -> Unit): ReactElement {
-    return child(TextPopUp::class) {
-        this.attrs(handler)
+fun RBuilder.textPopUp(handler: TextPopUpProps.() -> Unit) = child(textPopUp) {
+    attrs {
+        handler()
     }
 }
