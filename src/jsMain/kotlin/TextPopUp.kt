@@ -14,20 +14,14 @@ import styled.styledSpan
 
 external interface TextPopUpProps : RProps {
     var toggle: () -> Unit
-    var text: String
+    var initText: String
+    var handleSubmit: (String) -> Unit
 }
 
 val textPopUp = functionalComponent<TextPopUpProps> { props ->
-    val (text, setText) = useState(props.text)
+    val (text, setText) = useState(props.initText)
     val handleChange: (Event) -> Unit = {
         setText((it.target as HTMLTextAreaElement).value)
-    }
-
-    fun handleSubmit(text: String): (Event) -> Unit {
-        return {
-            window.alert("отправлено '${text}', никуда")
-            it.preventDefault()
-        }
     }
 
     styledDiv {
@@ -44,7 +38,9 @@ val textPopUp = functionalComponent<TextPopUpProps> { props ->
                 +"Close"
             }
             form {
-                attrs.onSubmitFunction = handleSubmit(text)
+                attrs.onSubmitFunction = {
+                    props.handleSubmit(text)
+                }
                 label {
                     +"Описание недели:"
                     textArea {

@@ -1,24 +1,13 @@
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 import kotlinx.css.*
 import react.RProps
 import react.functionalComponent
-import react.useEffect
-import react.useState
 import styled.css
 import styled.styledDiv
-import styled.styledH1
 
 private val scope = MainScope()
 
 val App = functionalComponent<RProps> { _ ->
-    val (weekNoteList, setWeekNoteList) = useState(emptyList<WeekNote>())
-
-    useEffect(dependencies = listOf()) {
-        scope.launch {
-            setWeekNoteList(getWeekNoteList())
-        }
-    }
     styledDiv {
         css {
             display = Display.flex
@@ -30,9 +19,7 @@ val App = functionalComponent<RProps> { _ ->
             css {
                 flex(1.0, 1.0)
             }
-            table {
-                list = weekNoteList
-            }
+            myTable {}
         }
     }
 }

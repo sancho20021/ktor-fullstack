@@ -8,18 +8,19 @@ data class WeekNoteList(
             this(dateOfBirth,
                 MutableList(
                     (nowDate() - dateOfBirth).weeks()
-                ) { WeekNote() })
+                ) { WeekNote(id = it) })
 
     constructor(dateOfBirth: String) : this(dateOfBirth.toLocalDate())
 
     companion object {
         const val path = Paths.weekNoteListPath
-        fun DatePeriod.weeks() = (this.years * 365 + this.days) / 7;
+        fun DatePeriod.weeks() = (this.years * 365 + this.days) / 7
         fun nowDate() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     }
 
     fun update() {
-        val missedWeeks = (nowDate() - born).weeks() - list.size;
-        list.addAll(List(missedWeeks) { WeekNote() })
+        val missedWeeks = (nowDate() - born).weeks() - list.size
+        val oldSize = list.size
+        list.addAll(List(missedWeeks) { WeekNote(id = oldSize + it) })
     }
 }

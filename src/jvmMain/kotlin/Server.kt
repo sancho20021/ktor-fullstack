@@ -2,6 +2,7 @@ import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.http.content.*
+import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
@@ -37,7 +38,15 @@ fun Application.main() {
     routing {
         route(WeekNoteList.path) {
             get {
+                weekNoteList.update()
                 call.respond(weekNoteList.list)
+            }
+            post {
+                val weekNote = call.receive<WeekNote>()
+                if (weekNote.id >= weekNoteList.list.size)
+                    call.respond(HttpStatusCode.BadRequest)
+                weekNoteList.list[weekNote.id] = weekNote
+                call.respond(HttpStatusCode.OK)
             }
         }
         get("/") {

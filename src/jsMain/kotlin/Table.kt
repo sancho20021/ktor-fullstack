@@ -1,4 +1,5 @@
-import kotlinx.browser.window
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import kotlinx.css.*
 import kotlinx.html.js.onClickFunction
 import react.*
@@ -8,30 +9,27 @@ import styled.styledDiv
 import styled.styledTable
 import styled.styledTd
 
-external interface TableProps : RProps {
-    var list: List<WeekNote>
-}
+private val scope = MainScope()
 
-external interface TableState : RState {
-    var textPopUpSeen: Boolean
-    var descIndex: Int?
-}
-
-class Table : RComponent<TableProps, TableState>() {
+val myTable = functionalComponent<RProps> { props ->
+    val (textPopUpSeen, setPopUpSeen) = useState(false)
+    val (popUpIndex, setPopUpIndex) = useState(-1)
     val rows = 90
     val columns = 52
 
-    fun togglePop() {
-        setState {
-            textPopUpSeen = !textPopUpSeen
+    val (weekNoteList, setWeekNoteList) = useState(emptyList<WeekNote>())
+
+    useEffect(dependencies = listOf()) {
+        scope.launch {
+            setWeekNoteList(getWeekNoteList())
         }
     }
 
-    override fun TableState.init() {
-        textPopUpSeen = false
+    fun togglePop() {
+        setPopUpSeen(!textPopUpSeen)
     }
 
-    override fun RBuilder.render() {
+    if (textPopUpSeen) {
         styledDiv {
             css {
                 zIndex = 100
@@ -42,58 +40,64 @@ class Table : RComponent<TableProps, TableState>() {
                 justifyContent = JustifyContent.center
                 alignItems = Align.center
             }
-            if (state.textPopUpSeen) {
-                textPopUp {
-                    toggle = { setState {
-                        textPopUpSeen = false
-                        descIndex = null
-                    } }
-                    text =
-                        if (state.descIndex != null)
-                            props.list[state.descIndex!!].desc
-                        else "Это будущая неделя!"
+
+            textPopUp {
+                toggle = {
+                    togglePop()
+                }
+                initText =
+                    if (popUpIndex < weekNoteList.size)
+                        weekNoteList[popUpIndex].desc
+                    else "Это будущая неделя!"
+                handleSubmit = {
+                    if (popUpIndex < weekNoteList.size) {
+                        weekNoteList[popUpIndex].desc = it
+                        setWeekNoteList(weekNoteList)
+                        scope.launch {
+                            setWeekNote(weekNoteList[popUpIndex])
+                        }
+                    }
+                    setPopUpSeen(false)
                 }
             }
+
         }
-        styledTable {
-            css {
-                +AppStyles.table
-                +AppStyles.tableTdTh
-                zIndex = 1
-                position = Position.absolute
-            }
-            for (row in 0 until rows) {
-                tr {
-                    for (col in 0 until columns) {
-                        val index = row * columns + col
-                        styledTd {
-                            css {
-                                +AppStyles.tableTdTh
-                                backgroundColor =
-                                    if (index < props.list.size)
-                                        if (props.list[index].desc.isEmpty()) Color.red
-                                        else Color.yellow
-                                    else Color.wheat
-                            }
-                            attrs.onClickFunction = {
-                                setState {
-                                    textPopUpSeen = true
-                                    descIndex =
-                                        if (index < props.list.size)
-                                            index
-                                        else null
-                                }
-                            }
+    }
+
+    styledTable {
+        css {
+            +AppStyles.table
+            +AppStyles.tableTdTh
+            zIndex = 1
+            position = Position.absolute
+        }
+        for (row in 0 until rows) {
+            tr {
+                for (col in 0 until columns) {
+                    val index = row * columns + col
+                    styledTd {
+                        css {
+                            +AppStyles.tableTdTh
+                            backgroundColor =
+                                if (index < weekNoteList.size)
+                                    if (weekNoteList[index].desc.isEmpty()) Color.red
+                                    else Color.yellow
+                                else Color.wheat
+                        }
+                        attrs.onClickFunction = {
+                            setPopUpSeen(true)
+                            setPopUpIndex(index)
                         }
                     }
                 }
             }
         }
     }
+
 }
 
-fun RBuilder.table(handler: TableProps.() -> Unit): ReactElement {
-    return child(Table::class) {
-        this.attrs(handler)
+fun RBuilder.myTable(handler: RProps.() -> Unit) = child(myTable) {
+    attrs {
+        handler()
     }
 }
