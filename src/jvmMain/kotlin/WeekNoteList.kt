@@ -10,12 +10,18 @@ data class WeekNoteList(
                     (nowDate() - dateOfBirth).weeks()
                 ) { WeekNote(id = it) })
 
-    constructor(dateOfBirth: String) : this(dateOfBirth.toLocalDate())
+    constructor(mmddyyyy: String) : this(parseDate(mmddyyyy))
 
     companion object {
-        const val path = Paths.weekNoteListPath
         fun DatePeriod.weeks() = (this.years * 365 + this.days) / 7
         fun nowDate() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        fun parseDate(mmddyyyy: String): LocalDate {
+            val params = mmddyyyy.split("-")
+            val month = params[0].toInt()
+            val day = params[1].toInt()
+            val year = params[2].toInt()
+            return LocalDate(year = year, monthNumber = month, dayOfMonth = day)
+        }
     }
 
     fun update() {

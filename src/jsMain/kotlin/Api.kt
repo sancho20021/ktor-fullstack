@@ -11,13 +11,15 @@ val jsonClient = HttpClient {
     install(JsonFeature) { serializer = KotlinxSerializer() }
 }
 
-suspend fun getWeekNoteList(): List<WeekNote> {
-    return jsonClient.get(endpoint + Paths.weekNoteListPath)
+// returns empty List if user with id doesn't exist
+suspend fun getWeekNoteList(id: Int): List<WeekNote> {
+    return jsonClient.get(endpoint + "${CommonRoutes.API}/$id/${CommonRoutes.WEEKNOTELIST}")
 }
 
-suspend fun setWeekNote(weekNote: WeekNote) {
-    jsonClient.post<Unit>(endpoint + Paths.weekNoteListPath) {
+suspend fun setWeekNote(id: Int, weekNote: WeekNote) {
+    jsonClient.post<Unit>(endpoint + "${CommonRoutes.API}/$id/${CommonRoutes.WEEKNOTELIST}") {
         contentType(ContentType.Application.Json)
         body = weekNote
     }
 }
+
