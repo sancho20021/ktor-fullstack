@@ -1,16 +1,13 @@
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
-import kotlinx.css.Color
-import kotlinx.css.color
+import kotlinx.css.*
 import kotlinx.html.InputType
 import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.events.Event
 import react.*
-import react.dom.*
-import styled.css
-import styled.styledP
+import styled.*
 
 private val scope = MainScope()
 
@@ -24,26 +21,49 @@ val homePage = functionalComponent<RProps> {
     }
     val (link, setLink) = useState("")
     val (inputError, setInputError) = useState("")
-    div {
-        h1 {
+    styledImg(src = "https://sun9-23.userapi.com/impg/j5ndC85x7EDkJDfFNabmO1MfzcK0ZD76W5rK6w/7Y_P-DcHHFE.jpg?size=2560x1440&quality=96&proxy=1&sign=651330aa007a00c145d98865713c6de9&type=album") {
+        css {
+            position = Position.fixed
+            width = LinearDimension("100%")
+            zIndex = -1
+        }
+    }
+    styledDiv {
+        css {
+            display = Display.flex
+            alignItems = Align.center
+            justifyContent = JustifyContent.center
+            flexDirection = FlexDirection.column
+        }
+        styledH1 {
+            css {
+                color = Color.white
+            }
             +"Create your life calendar"
         }
-        input(type = InputType.text) {
+        styledInput(type = InputType.text) {
+            css {
+                width = 250.px
+            }
             attrs {
                 placeholder = "Enter your name"
                 onChangeFunction = getChangeFunction(setName)
                 value = name
             }
         }
-        br {}
-        input(type = InputType.date) {
+        styledInput(type = InputType.date) {
+            css {
+                width = 250.px
+            }
             attrs {
                 attrs.onChangeFunction = getChangeFunction(setDateOfBirth)
                 value = dateOfBirth
             }
         }
-        br {}
-        input(type = InputType.button) {
+        styledInput(type = InputType.button) {
+            css {
+                width = 250.px
+            }
             attrs.value = "Get my life calendar!"
             attrs.onClickFunction = {
                 if (inputError.isNotEmpty()) {
@@ -69,10 +89,15 @@ val homePage = functionalComponent<RProps> {
         if (link.isNotEmpty()) {
             styledP {
                 css {
-                    color = Color.green
+                    +AppStyles.whiteRedText
+                    backgroundColor = Color.skyBlue
                 }
                 +"Here is your link: "
-                a(href = "http://$link") {
+                styledA(href = "http://$link") {
+                    css {
+                        +AppStyles.whiteRedText
+                        backgroundColor = Color.skyBlue
+                    }
                     +"http://$link"
                 }
             }
@@ -80,7 +105,8 @@ val homePage = functionalComponent<RProps> {
         if (inputError.isNotEmpty()) {
             styledP {
                 css {
-                    color = Color.red
+                    +AppStyles.whiteRedText
+                    backgroundColor = Color.hotPink
                 }
                 +inputError
             }

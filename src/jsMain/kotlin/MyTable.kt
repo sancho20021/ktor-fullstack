@@ -1,14 +1,16 @@
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.css.*
+import kotlinx.datetime.DatePeriod
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDate
 import kotlinx.html.js.onClickFunction
 import react.*
+import react.dom.h1
+import react.dom.p
 import react.dom.tr
 import react.router.dom.redirect
-import styled.css
-import styled.styledDiv
-import styled.styledTable
-import styled.styledTd
+import styled.*
 
 private val scope = MainScope()
 
@@ -24,6 +26,7 @@ val myTable = functionalComponent<MyTableProps> { props ->
 
     val (userExists, setUserExists) = useState("")
     val (weekNoteList, setWeekNoteList) = useState(emptyList<WeekNote>())
+    val (userInfo, setUserInfo) = useState<UserInfo?>(null)
 
     useEffect(dependencies = listOf()) {
         scope.launch {
@@ -31,9 +34,19 @@ val myTable = functionalComponent<MyTableProps> { props ->
             setWeekNoteList(getWeekNoteList(props.id))
         }
     }
+    useEffect(dependencies = listOf(userExists)) {
+        if (userExists == "yes") {
+            scope.launch {
+                setUserInfo(getUserInfo(props.id))
+            }
+        }
+    }
     if (userExists == "no") {
         redirect(to = CommonRoutes.API + CommonRoutes.INVALID)
-    } else if (userExists == "yes" && weekNoteList.isNotEmpty()) {
+    } else if (userExists == "yes" && weekNoteList.isNotEmpty() && userInfo != null) {
+        styledH1 {
+            +"${userInfo.name}, родился: ${userInfo.dateOfBirth.toLocalDate()}"
+        }
         if (textPopUpSeen) {
             styledDiv {
                 css {
@@ -49,11 +62,12 @@ val myTable = functionalComponent<MyTableProps> { props ->
                 textPopUp {
                     toggle = {
                         setPopUpSeen(!textPopUpSeen)
+                        setPopUpIndex(-1)
                     }
                     initText =
                         if (popUpIndex < weekNoteList.size)
                             weekNoteList[popUpIndex].desc
-                        else "Это будущая неделя!"
+                        else ""
                     handleSubmit = {
                         if (popUpIndex < weekNoteList.size) {
                             weekNoteList[popUpIndex].desc = it
@@ -62,12 +76,15 @@ val myTable = functionalComponent<MyTableProps> { props ->
                                 setWeekNote(props.id, weekNoteList[popUpIndex])
                             }
                         }
-                        setPopUpSeen(false)
                     }
+                    readOnly = popUpIndex >= weekNoteList.size
+                    val startOfTheWeek = userInfo.dateOfBirth
+                        .toLocalDate() + DatePeriod(days = popUpIndex * 7)
+                    val endOfTheWeek = startOfTheWeek + DatePeriod(days = 6)
+                    additionalDesc = "Неделя $popUpIndex ($startOfTheWeek - $endOfTheWeek)"
                 }
             }
         }
-
         styledTable {
             css {
                 +AppStyles.table
@@ -85,8 +102,12 @@ val myTable = functionalComponent<MyTableProps> { props ->
                                 backgroundColor =
                                     if (index < weekNoteList.size)
                                         if (weekNoteList[index].desc.isEmpty()) Color.red
-                                        else Color.yellow
+                                        else Color.lightGreen
                                     else Color.wheat
+                                if (index == popUpIndex) {
+                                    backgroundColor = Color.white
+                                    border = "2px solid #00f"
+                                }
                             }
                             attrs.onClickFunction = {
                                 setPopUpSeen(true)

@@ -7,25 +7,17 @@ data class WeekNoteList(
     constructor(dateOfBirth: LocalDate) :
             this(dateOfBirth,
                 MutableList(
-                    (nowDate() - dateOfBirth).weeks()
+                    (dateOfBirth.daysUntil(nowDate()) + 6) / 7
                 ) { WeekNote(id = it) })
 
-    constructor(yyyymmdd: String) : this(parseDate(yyyymmdd))
+    constructor(yyyymmdd: String) : this(yyyymmdd.toLocalDate())
 
     companion object {
-        fun DatePeriod.weeks() = (this.years * 365 + this.days) / 7
         fun nowDate() = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-        fun parseDate(mmddyyyy: String): LocalDate {
-            val params = mmddyyyy.split("-")
-            val year = params[0].toInt()
-            val month = params[1].toInt()
-            val day = params[2].toInt()
-            return LocalDate(year = year, monthNumber = month, dayOfMonth = day)
-        }
     }
 
     fun update() {
-        val missedWeeks = (nowDate() - born).weeks() - list.size
+        val missedWeeks = (born.daysUntil(nowDate()) + 6) / 7 - list.size
         val oldSize = list.size
         list.addAll(List(missedWeeks) { WeekNote(id = oldSize + it) })
     }

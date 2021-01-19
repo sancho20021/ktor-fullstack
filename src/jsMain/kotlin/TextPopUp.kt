@@ -1,4 +1,3 @@
-import kotlinx.browser.window
 import kotlinx.css.*
 import kotlinx.html.InputType
 import kotlinx.html.js.onChangeFunction
@@ -9,50 +8,67 @@ import org.w3c.dom.events.Event
 import react.*
 import react.dom.*
 import styled.css
+import styled.styledButton
 import styled.styledDiv
-import styled.styledSpan
+import styled.styledTextArea
 
 external interface TextPopUpProps : RProps {
     var toggle: () -> Unit
     var initText: String
     var handleSubmit: (String) -> Unit
+    var readOnly: Boolean
+    var additionalDesc: String
 }
 
 val textPopUp = functionalComponent<TextPopUpProps> { props ->
     val (text, setText) = useState(props.initText)
     val handleChange: (Event) -> Unit = {
-        setText((it.target as HTMLTextAreaElement).value)
+        if (!props.readOnly)
+            setText((it.target as HTMLTextAreaElement).value)
     }
 
     styledDiv {
-        styledDiv {
+        css {
+            position = Position.absolute
+            backgroundColor = Color.white
+            width = 500.px
+            height = 400.px
+        }
+        styledButton {
             css {
                 position = Position.absolute
-                backgroundColor = Color.white
+                right = 0.px
+                backgroundColor = Color.pink
             }
-            styledSpan {
+            attrs.onClickFunction = { props.toggle() }
+            +"X"
+        }
+        form {
+            attrs.onSubmitFunction = {
+                props.handleSubmit(text)
+                props.toggle()
+            }
+            h3 {
+                +"Описание недели:"
+            }
+            h5 {
+                +props.additionalDesc
+            }
+            styledTextArea {
                 css {
-                    color = Color.red
+                    width = LinearDimension("98%")
                 }
-                attrs.onClickFunction = { props.toggle() }
-                +"Close"
+                attrs {
+                    placeholder =
+                        if (props.readOnly) "Эту неделю пока нельзя редактировать"
+                        else "Запишите, что вы делали за эту неделю"
+                    value = text
+                    onChangeFunction = handleChange
+                }
             }
-            form {
-                attrs.onSubmitFunction = {
-                    props.handleSubmit(text)
-                }
-                label {
-                    +"Описание недели:"
-                    textArea {
-                        attrs {
-                            value = text
-                            onChangeFunction = handleChange
-                        }
-                    }
-                }
-                input(InputType.submit) {
-                    attrs.value = "Сохранить"
-                }
+            br {}
+            input(InputType.submit) {
+                attrs.value = "Сохранить"
             }
         }
     }

@@ -1,4 +1,3 @@
-import kotlinx.coroutines.MainScope
 import kotlinx.css.*
 import react.RBuilder
 import react.RProps
@@ -7,6 +6,7 @@ import react.functionalComponent
 import react.router.dom.redirect
 import styled.css
 import styled.styledDiv
+import styled.styledImg
 
 interface CalendarProps : RProps {
     var id: String?

@@ -31,6 +31,10 @@ suspend fun getNewUserLink(userInfo: UserInfo): String {
 }
 
 suspend fun checkUserExistence(id: Int): String {
-    return jsonClient.get(endpoint + CommonRoutes.API + CommonRoutes.CHECKUE + "/$id")
+    return jsonClient.get(endpoint + CommonRoutes.API + "/$id" + CommonRoutes.CHECKUE)
+}
+
+suspend fun getUserInfo(id: Int): UserInfo {
+    return jsonClient.get(endpoint + CommonRoutes.API + "/$id" + CommonRoutes.USERINFO)
 }
 
