@@ -23,3 +23,14 @@ suspend fun setWeekNote(id: Int, weekNote: WeekNote) {
     }
 }
 
+suspend fun getNewUserLink(userInfo: UserInfo): String {
+    return jsonClient.post(endpoint + CommonRoutes.API + CommonRoutes.CREATE) {
+        contentType(ContentType.Application.Json)
+        body = userInfo
+    }
+}
+
+suspend fun checkUserExistence(id: Int): String {
+    return jsonClient.get(endpoint + CommonRoutes.API + CommonRoutes.CHECKUE + "/$id")
+}
+

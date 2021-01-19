@@ -1,4 +1,3 @@
-import kotlinx.browser.window
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.css.*
@@ -23,20 +22,18 @@ val myTable = functionalComponent<MyTableProps> { props ->
     val rows = 90
     val columns = 52
 
+    val (userExists, setUserExists) = useState("")
     val (weekNoteList, setWeekNoteList) = useState(emptyList<WeekNote>())
 
     useEffect(dependencies = listOf()) {
         scope.launch {
+            setUserExists(checkUserExistence(props.id))
             setWeekNoteList(getWeekNoteList(props.id))
         }
     }
-//    if (weekNoteList.isEmpty()) {
-//        redirect(to = CommonRoutes.API + CommonRoutes.INVALID)
-//    } else {
-        fun togglePop() {
-            setPopUpSeen(!textPopUpSeen)
-        }
-
+    if (userExists == "no") {
+        redirect(to = CommonRoutes.API + CommonRoutes.INVALID)
+    } else if (userExists == "yes" && weekNoteList.isNotEmpty()) {
         if (textPopUpSeen) {
             styledDiv {
                 css {
@@ -51,7 +48,7 @@ val myTable = functionalComponent<MyTableProps> { props ->
 
                 textPopUp {
                     toggle = {
-                        togglePop()
+                        setPopUpSeen(!textPopUpSeen)
                     }
                     initText =
                         if (popUpIndex < weekNoteList.size)
@@ -68,7 +65,6 @@ val myTable = functionalComponent<MyTableProps> { props ->
                         setPopUpSeen(false)
                     }
                 }
-
             }
         }
 
@@ -99,7 +95,7 @@ val myTable = functionalComponent<MyTableProps> { props ->
                         }
                     }
                 }
-            //}
+            }
         }
     }
 }

@@ -5,4 +5,6 @@ object CommonRoutes {
     const val HOME = "/"
     const val CALENDARS = "/calendars"
     const val INVALID = "/invalid"
+    const val CREATE = "/create"
+    const val CHECKUE = "/checkue"
 }
