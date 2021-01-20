@@ -14,7 +14,7 @@ val RootComponent = functionalComponent<RProps> {
             }
             route<RProps>(CommonRoutes.CALENDARS) {
                 calendarPage {
-                    id = URLSearchParams(it.location.search).get("id")
+                    link = URLSearchParams(it.location.search).get("link")
                 }
             }
             redirect(from = CommonRoutes.API + CommonRoutes.INVALID, to = CommonRoutes.HOME)

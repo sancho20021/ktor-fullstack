@@ -1,6 +1,4 @@
-import Data.createTestUser
-import Data.nowDate
-import Data.updateTestUserList
+import Data.users
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.*
@@ -9,44 +7,65 @@ import io.ktor.routing.*
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDate
-import kotlin.random.Random
+import org.litote.kmongo.eq
 
-private fun getNewId(): Int {
-    var id: Int? = null
-    while (id == null || Data.idToTestUser.containsKey(id)) {
-        id = Random.nextInt()
-    }
-    return id
-}
-
-private fun getTestUserOrNull(idParam: String?): TestUser? {
+private fun getTestUserOrNull(link: String?): TestUser? {
     var testUser: TestUser? = null
-    val id = idParam?.toIntOrNull()
-    if (id != null)
-        testUser = Data.idToTestUser[id]
+    if (link != null)
+        testUser = users.find { it.link == link }
     return testUser
 }
 
 internal fun Routing.apiRoute() {
     route(CommonRoutes.API) {
-        route("/{id}") {
+        route("/{link}") {
             route(CommonRoutes.WEEKNOTE) {
                 post {
-                    val weekNoteList = Data.idToTestUser[call.parameters["id"]!!.toInt()]!!.weekNoteList
+                    // val weekNoteList = users.find { it.link == call.parameters["link"]!! }?.weekNoteList
 
-                    val weekNote = call.receive<WeekNote>()
-                    if (weekNote.id >= weekNoteList.size)
+                    val user = Data.collection.findOne(TestUser::link eq call.parameters["link"]!!)
+                    if (user == null) {
                         call.respond(HttpStatusCode.BadRequest)
-                    weekNoteList[weekNote.id] = weekNote
-                    call.respond(HttpStatusCode.OK)
+                    } else {
+                        val weekNoteList = user.weekNoteList
+                        val weekNote = call.receive<WeekNote>()
+                        if (weekNote.id >= weekNoteList.size) {
+                            call.respond(HttpStatusCode.BadRequest)
+                        } else {
+                            weekNoteList[weekNote.id] = weekNote
+                            Data.collection.updateOneById(user._id, user)
+                            call.respond(HttpStatusCode.OK)
+                        }
+
+                    }
+//                    if (weekNoteList == null) {
+//                        call.respond(HttpStatusCode.BadRequest)
+//                    } else {
+//                        val weekNote = call.receive<WeekNote>()
+//                        if (weekNote.id >= weekNoteList.size)
+//                            call.respond(HttpStatusCode.BadRequest)
+//                        weekNoteList[weekNote.id] = weekNote
+//                        call.respond(HttpStatusCode.OK)
+//                    }
                 }
             }
             get(CommonRoutes.TESTUSER) {
-                val testUser = getTestUserOrNull(call.parameters["id"])
-                if (testUser != null) {
-                    updateTestUserList(testUser)
+                val link = call.parameters["link"]
+                var user: TestUser? = null
+                if (link != null) {
+                    user = Data.collection.findOne(TestUser::link eq link)
                 }
-                call.respond(testUser ?: TestUser(UserInfo("no", "no"), mutableListOf()))
+
+                if (user != null) {
+                    Data.updateTestUserList(user)
+                    Data.collection.updateOneById(user._id, user)
+                }
+                call.respond(
+                    user ?: TestUser(
+                        UserInfo("no", "no"),
+                        mutableListOf(), "", "-1"
+                    )
+                )
             }
         }
 
@@ -60,15 +79,16 @@ internal fun Routing.apiRoute() {
                 } catch (e: IllegalArgumentException) {
                     isOk = false;
                 }
-                if (!isOk || dateOfBirth!! >= nowDate()
-                    || (nowDate().minus(dateOfBirth).years > 100)
-                ) {
+                if (!isOk || dateOfBirth!! >= nowDate() || (nowDate().minus(dateOfBirth).years > 100)) {
                     call.respondText("invalid date")
                 } else {
-                    val testUser = createTestUser(userInfo)
-                    val newId = getNewId()
-                    Data.idToTestUser[newId] = testUser
-                    call.respondText("127.0.0.1:9090${CommonRoutes.CALENDARS}?id=$newId")
+                    val testUser = Data.createTestUser(userInfo)
+
+                    Data.collection.insertOne(testUser)
+
+                    call.respondText(
+                        "127.0.0.1:9090${CommonRoutes.CALENDARS}?link=${testUser.link}"
+                    )
                 }
             }
         }

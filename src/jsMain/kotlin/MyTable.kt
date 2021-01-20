@@ -6,8 +6,6 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDate
 import kotlinx.html.js.onClickFunction
 import react.*
-import react.dom.h1
-import react.dom.p
 import react.dom.tr
 import react.router.dom.redirect
 import styled.*
@@ -15,7 +13,7 @@ import styled.*
 private val scope = MainScope()
 
 interface MyTableProps : RProps {
-    var id: Int
+    var link: String
 }
 
 val myTable = functionalComponent<MyTableProps> { props ->
@@ -29,7 +27,7 @@ val myTable = functionalComponent<MyTableProps> { props ->
 
     useEffect(dependencies = listOf()) {
         scope.launch {
-            val testUser = getTestUser(props.id)
+            val testUser = getTestUser(props.link)
             setUserInfo(testUser.userInfo)
             setWeekNoteList(testUser.weekNoteList)
         }
@@ -66,7 +64,7 @@ val myTable = functionalComponent<MyTableProps> { props ->
                             weekNoteList[popUpIndex].desc = it
                             setWeekNoteList(weekNoteList)
                             scope.launch {
-                                setWeekNote(props.id, weekNoteList[popUpIndex])
+                                setWeekNote(props.link, weekNoteList[popUpIndex])
                             }
                         }
                     }

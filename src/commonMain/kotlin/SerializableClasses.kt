@@ -6,7 +6,9 @@ data class UserInfo(val name: String, val dateOfBirth: String)
 @Serializable
 data class TestUser(
     val userInfo: UserInfo,
-    val weekNoteList: MutableList<WeekNote>
+    val weekNoteList: MutableList<WeekNote>,
+    val link: String,
+    val _id: String
 )
 
 @Serializable

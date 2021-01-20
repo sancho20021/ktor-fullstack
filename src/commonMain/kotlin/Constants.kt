@@ -9,4 +9,6 @@ object CommonRoutes {
     const val CREATE = "/create"
     const val CHECKUE = "/checkue"
     const val TESTUSER = "/testUser"
+
 }
+const val LINK_LEN = 20
