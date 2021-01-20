@@ -24,26 +24,19 @@ val myTable = functionalComponent<MyTableProps> { props ->
     val rows = 90
     val columns = 52
 
-    val (userExists, setUserExists) = useState("")
+    val (userInfo, setUserInfo) = useState(UserInfo("", ""))
     val (weekNoteList, setWeekNoteList) = useState(emptyList<WeekNote>())
-    val (userInfo, setUserInfo) = useState<UserInfo?>(null)
 
     useEffect(dependencies = listOf()) {
         scope.launch {
-            setUserExists(checkUserExistence(props.id))
-            setWeekNoteList(getWeekNoteList(props.id))
+            val testUser = getTestUser(props.id)
+            setUserInfo(testUser.userInfo)
+            setWeekNoteList(testUser.weekNoteList)
         }
     }
-    useEffect(dependencies = listOf(userExists)) {
-        if (userExists == "yes") {
-            scope.launch {
-                setUserInfo(getUserInfo(props.id))
-            }
-        }
-    }
-    if (userExists == "no") {
+    if (userInfo.name == "no" && userInfo.dateOfBirth == "no") {
         redirect(to = CommonRoutes.API + CommonRoutes.INVALID)
-    } else if (userExists == "yes" && weekNoteList.isNotEmpty() && userInfo != null) {
+    } else if (userInfo.name.isNotEmpty() && userInfo.dateOfBirth.isNotEmpty()) {
         styledH1 {
             +"${userInfo.name}, родился: ${userInfo.dateOfBirth.toLocalDate()}"
         }

@@ -1,1 +1,0 @@
-data class FullUser(val userInfo: UserInfo, val weekNoteList: WeekNoteList)

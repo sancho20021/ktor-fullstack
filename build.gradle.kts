@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 val kotlinVersion = "1.4.0"
 val serializationVersion = "1.0.0-RC"
 val ktorVersion = "1.4.0"
+val exposedVersion = "0.28.1"
 
 plugins {
     kotlin("multiplatform") version "1.4.0"
@@ -54,7 +55,12 @@ kotlin {
                 implementation("ch.qos.logback:logback-classic:1.2.3")
                 implementation("io.ktor:ktor-websockets:$ktorVersion")
                 implementation("org.litote.kmongo:kmongo-coroutine-serialization:4.1.1")
-                implementation("io.ktor:ktor-jackson:$ktorVersion")
+
+                // DataBase
+                implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+                //implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+                implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+                implementation("org.xerial:sqlite-jdbc:+")
             }
         }
 

@@ -9,9 +9,6 @@ import io.ktor.server.netty.*
 
 
 fun main(args: Array<String>) {
-    Data.idToFullUsers[sashaId]!!.weekNoteList.list[0].desc = "День рождения"
-    Data.idToFullUsers[sashaId]!!.weekNoteList.list[5].desc = "5 неделя с рождения\n" +
-            "перенос строки"
     val env = applicationEngineEnvironment {
         module {
             main()
@@ -27,9 +24,6 @@ fun main(args: Array<String>) {
 fun Application.main() {
     install(ContentNegotiation) {
         json()
-//        jackson {
-//            enable(SerializationFeature.INDENT_OUTPUT)
-//        }
     }
 
     routing {
