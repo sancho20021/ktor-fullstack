@@ -99,8 +99,10 @@ val myTable = functionalComponent<MyTableProps> { props ->
                                 }
                             }
                             attrs.onClickFunction = {
-                                setPopUpSeen(true)
-                                setPopUpIndex(index)
+                                if (!textPopUpSeen) {
+                                    setPopUpSeen(true)
+                                    setPopUpIndex(index)
+                                }
                             }
                         }
                     }
