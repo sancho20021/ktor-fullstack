@@ -1,14 +1,49 @@
-import Data.users
+import DataBase.users
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.minus
-import kotlinx.datetime.toLocalDate
+import kotlinx.datetime.*
 import org.litote.kmongo.eq
 
+fun nowDate(): LocalDate {
+    return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+}
+
+private fun updateFullUserList(fullUser: FullUser) {
+    val missedWeeks = (fullUser
+        .userInfo
+        .dateOfBirth
+        .toLocalDate()
+        .daysUntil(nowDate()) + 6) / 7 - fullUser.weekNoteList.size
+    val oldSize = fullUser.weekNoteList.size
+    fullUser.weekNoteList.addAll(List(missedWeeks) { WeekNote(id = oldSize + it) })
+}
+
+private suspend fun createFullUser(userInfo: UserInfo) =
+    FullUser(
+        userInfo,
+        MutableList(
+            (userInfo.dateOfBirth.toLocalDate().daysUntil(nowDate()) + 6) / 7
+        ) { WeekNote(id = it) },
+        getNewId()
+    )
+
+private suspend fun getNewId(): String {
+    var newId: String? = null
+    while (newId == null || users.findOne(FullUser::_id eq newId) != null) {
+        newId = getRandomString()
+    }
+    return newId
+}
+
+private fun getRandomString(): String {
+    val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
+    return (1..LINK_LEN)
+        .map { allowedChars.random() }
+        .joinToString("")
+}
 
 internal fun Routing.apiRoute() {
     route(CommonRoutes.API) {
@@ -38,7 +73,7 @@ internal fun Routing.apiRoute() {
                     user = users.findOneById(id)
                 }
                 if (user != null) {
-                    Data.updateFullUserList(user)
+                    updateFullUserList(user)
                     users.updateOneById(user._id, user)
                 }
                 call.respond(
@@ -55,15 +90,17 @@ internal fun Routing.apiRoute() {
                 try {
                     dateOfBirth = userInfo.dateOfBirth.toLocalDate()
                 } catch (e: IllegalArgumentException) {
-                    isDate = false;
+                    isDate = false
                 }
-                if (!isDate || dateOfBirth!! >= Data.nowDate() || (Data.nowDate() - dateOfBirth).years > MAX_AGE) {
+                if (!isDate || dateOfBirth!! >= nowDate() || (nowDate() - dateOfBirth).years > MAX_AGE) {
                     call.respondText("invalid date")
                 } else {
-                    val fullUser = Data.createFullUser(userInfo)
+                    val fullUser = createFullUser(userInfo)
                     users.insertOne(fullUser)
                     call.respondText(
-                        "http://127.0.0.1:9090${CommonRoutes.CALENDARS}?id=${fullUser._id}"
+                        "http://${call.request.host()}:" +
+                                "${call.request.port()}" +
+                                "${CommonRoutes.CALENDARS}?id=${fullUser._id}"
                     )
                 }
             }
