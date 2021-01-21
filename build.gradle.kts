@@ -85,11 +85,11 @@ application {
 
 // include JS artifacts in any JAR we generate
 tasks.getByName<Jar>("jvmJar") {
-    val taskName = if (project.hasProperty("isProduction")) {
+    val taskName = /*if (project.hasProperty("isProduction")) {*/
         "jsBrowserProductionWebpack"
-    } else {
+    /*} else {
         "jsBrowserDevelopmentWebpack"
-    }
+    }*/
     val webpackTask = tasks.getByName<KotlinWebpack>(taskName)
     dependsOn(webpackTask) // make sure JS gets compiled first
     from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) // bring output file along into the JAR

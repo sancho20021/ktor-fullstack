@@ -8,33 +8,23 @@ import io.ktor.server.netty.*
 
 
 fun main(args: Array<String>) {
-    val extPort = System.getenv("PORT")?.toInt() ?: 9090
-    val env = applicationEngineEnvironment {
-        module {
-            main()
+    val extPort = 8080
+    embeddedServer(Netty, extPort) {
+        install(ContentNegotiation) {
+            json()
         }
-        connector {
-            host = "127.0.0.1"
-            port = extPort
-        }
-    }
-    embeddedServer(Netty, env).start(true)
-}
 
-fun Application.main() {
-    install(ContentNegotiation) {
-        json()
-    }
-
-    routing {
-        apiRoute()
-        static("/") {
-            resources("")
-            defaultResource("index.html")
-            static(CommonRoutes.CALENDARS) {
+        routing {
+            apiRoute()
+            static("/") {
                 resources("")
                 defaultResource("index.html")
+                static(CommonRoutes.CALENDARS) {
+                    resources("")
+                    defaultResource("index.html")
+                }
             }
         }
-    }
+    }.start(wait = true)
 }
+
