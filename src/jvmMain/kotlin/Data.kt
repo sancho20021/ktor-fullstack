@@ -4,62 +4,43 @@ import org.litote.kmongo.eq
 import org.litote.kmongo.reactivestreams.KMongo
 
 
-fun nowDate(): LocalDate {
-    return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-}
-
 object Data {
-    val users = mutableListOf<TestUser>()
     val client = KMongo.createClient().coroutine
-    val database = client.getDatabase("lifecalendar")
-    val collection = database.getCollection<TestUser>()
+    val database = client.getDatabase("lifeCalendar")
+    val users = database.getCollection<FullUser>()
 
+    fun nowDate(): LocalDate {
+        return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+    }
 
-    fun updateTestUserList(testUser: TestUser) {
-        val missedWeeks = (testUser
+    fun updateFullUserList(fullUser: FullUser) {
+        val missedWeeks = (fullUser
             .userInfo
             .dateOfBirth
             .toLocalDate()
-            .daysUntil(nowDate()) + 6) / 7 - testUser.weekNoteList.size
-        val oldSize = testUser.weekNoteList.size
-        testUser.weekNoteList.addAll(List(missedWeeks) { WeekNote(id = oldSize + it) })
+            .daysUntil(nowDate()) + 6) / 7 - fullUser.weekNoteList.size
+        val oldSize = fullUser.weekNoteList.size
+        fullUser.weekNoteList.addAll(List(missedWeeks) { WeekNote(id = oldSize + it) })
     }
 
-    suspend fun createTestUser(name: String, dateOfBirth: String): TestUser {
-        return createTestUser(UserInfo(name, dateOfBirth))
-    }
-
-    suspend fun createTestUser(userInfo: UserInfo): TestUser {
-        val newLink = getNewLink()
-        val user = TestUser(
+    suspend fun createFullUser(userInfo: UserInfo) =
+        FullUser(
             userInfo,
             MutableList(
                 (userInfo.dateOfBirth.toLocalDate().daysUntil(nowDate()) + 6) / 7
             ) { WeekNote(id = it) },
-            newLink,
-            newLink
+            getNewId()
         )
-        return user
-    }
 
-    suspend fun getNewLink(): String {
-        var newLink: String? = null
-        while (newLink == null || collection.findOne(TestUser::link eq newLink) != null) {
-            newLink = getRandomString()
+    private suspend fun getNewId(): String {
+        var newId: String? = null
+        while (newId == null || users.findOne(FullUser::_id eq newId) != null) {
+            newId = getRandomString()
         }
-        return newLink
+        return newId
     }
 
-    fun findOne(predicate: TestUser.() -> Boolean): TestUser? {
-        for (user in users) {
-            if (user.predicate()) {
-                return user
-            }
-        }
-        return null
-    }
-
-    fun getRandomString(): String {
+    private fun getRandomString(): String {
         val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9')
         return (1..LINK_LEN)
             .map { allowedChars.random() }

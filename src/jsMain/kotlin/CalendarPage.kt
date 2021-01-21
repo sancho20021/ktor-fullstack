@@ -8,11 +8,11 @@ import styled.css
 import styled.styledDiv
 
 interface CalendarProps : RProps {
-    var link: String?
+    var id: String?
 }
 
 val calendarPage = functionalComponent<CalendarProps> { calendarProps ->
-    if (calendarProps.link == null) {
+    if (calendarProps.id == null) {
         redirect(to = CommonRoutes.API + CommonRoutes.INVALID)
     } else {
         styledDiv {
@@ -27,7 +27,7 @@ val calendarPage = functionalComponent<CalendarProps> { calendarProps ->
                     flex(1.0, 1.0)
                 }
                 myTable {
-                    link = calendarProps.link!!
+                    id = calendarProps.id!!
                 }
             }
         }

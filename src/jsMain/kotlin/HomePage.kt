@@ -93,12 +93,12 @@ val homePage = functionalComponent<RProps> {
                     backgroundColor = Color.skyBlue
                 }
                 +"Here is your link: "
-                styledA(href = "http://$link") {
+                styledA(href = link) {
                     css {
                         +AppStyles.whiteRedText
                         backgroundColor = Color.skyBlue
                     }
-                    +"http://$link"
+                    +link
                 }
             }
         }

@@ -5,28 +5,23 @@ import io.ktor.routing.*
 import io.ktor.serialization.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 
 fun main(args: Array<String>) {
+    val extPort = System.getenv("PORT")?.toInt() ?: 9090
     val env = applicationEngineEnvironment {
         module {
-            runBlocking {
-                main()
-            }
+            main()
         }
         connector {
             host = "127.0.0.1"
-            port = 9090
+            port = extPort
         }
     }
     embeddedServer(Netty, env).start(true)
 }
 
-suspend fun Application.main() {
-    Data.users.add(Data.createTestUser("Саша", "2002-04-30"))
+fun Application.main() {
     install(ContentNegotiation) {
         json()
     }

@@ -4,10 +4,9 @@ import kotlinx.serialization.Serializable
 data class UserInfo(val name: String, val dateOfBirth: String)
 
 @Serializable
-data class TestUser(
+data class FullUser(
     val userInfo: UserInfo,
     val weekNoteList: MutableList<WeekNote>,
-    val link: String,
     val _id: String
 )
 

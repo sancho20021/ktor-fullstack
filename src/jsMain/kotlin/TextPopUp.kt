@@ -49,7 +49,7 @@ val textPopUp = functionalComponent<TextPopUpProps> { props ->
                 props.toggle()
             }
             h3 {
-                +"Описание недели:"
+                +"Week description:"
             }
             h5 {
                 +props.additionalDesc
@@ -60,15 +60,16 @@ val textPopUp = functionalComponent<TextPopUpProps> { props ->
                 }
                 attrs {
                     placeholder =
-                        if (props.readOnly) "Эту неделю пока нельзя редактировать"
-                        else "Запишите, что вы делали за эту неделю"
+                        if (props.readOnly) "“Yesterday is gone. Tomorrow has not yet come. We have only today. Let us begin.”\n" +
+                                "― Mother Theresa"
+                        else "Tell me what you have done this week"
                     value = text
                     onChangeFunction = handleChange
                 }
             }
             br {}
             input(InputType.submit) {
-                attrs.value = "Сохранить"
+                attrs.value = "Save"
             }
         }
     }

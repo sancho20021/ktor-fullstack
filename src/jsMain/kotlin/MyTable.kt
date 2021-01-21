@@ -13,30 +13,28 @@ import styled.*
 private val scope = MainScope()
 
 interface MyTableProps : RProps {
-    var link: String
+    var id: String
 }
 
 val myTable = functionalComponent<MyTableProps> { props ->
     val (textPopUpSeen, setPopUpSeen) = useState(false)
     val (popUpIndex, setPopUpIndex) = useState(-1)
-    val rows = 90
-    val columns = 52
 
     val (userInfo, setUserInfo) = useState(UserInfo("", ""))
     val (weekNoteList, setWeekNoteList) = useState(emptyList<WeekNote>())
 
     useEffect(dependencies = listOf()) {
         scope.launch {
-            val testUser = getTestUser(props.link)
-            setUserInfo(testUser.userInfo)
-            setWeekNoteList(testUser.weekNoteList)
+            val fullUser = getFullUser(props.id)
+            setUserInfo(fullUser.userInfo)
+            setWeekNoteList(fullUser.weekNoteList)
         }
     }
     if (userInfo.name == "no" && userInfo.dateOfBirth == "no") {
         redirect(to = CommonRoutes.API + CommonRoutes.INVALID)
     } else if (userInfo.name.isNotEmpty() && userInfo.dateOfBirth.isNotEmpty()) {
         styledH1 {
-            +"${userInfo.name}, родился: ${userInfo.dateOfBirth.toLocalDate()}"
+            +"${userInfo.name}, born: ${userInfo.dateOfBirth.toLocalDate()}"
         }
         if (textPopUpSeen) {
             styledDiv {
@@ -64,7 +62,7 @@ val myTable = functionalComponent<MyTableProps> { props ->
                             weekNoteList[popUpIndex].desc = it
                             setWeekNoteList(weekNoteList)
                             scope.launch {
-                                setWeekNote(props.link, weekNoteList[popUpIndex])
+                                setWeekNote(props.id, weekNoteList[popUpIndex])
                             }
                         }
                     }
@@ -72,7 +70,7 @@ val myTable = functionalComponent<MyTableProps> { props ->
                     val startOfTheWeek = userInfo.dateOfBirth
                         .toLocalDate() + DatePeriod(days = popUpIndex * 7)
                     val endOfTheWeek = startOfTheWeek + DatePeriod(days = 6)
-                    additionalDesc = "Неделя $popUpIndex ($startOfTheWeek - $endOfTheWeek)"
+                    additionalDesc = "Week $popUpIndex ($startOfTheWeek - $endOfTheWeek)"
                 }
             }
         }
@@ -83,10 +81,10 @@ val myTable = functionalComponent<MyTableProps> { props ->
                 zIndex = 1
                 position = Position.absolute
             }
-            for (row in 0 until rows) {
+            for (row in 0 until TableParams.ROWS) {
                 tr {
-                    for (col in 0 until columns) {
-                        val index = row * columns + col
+                    for (col in 0 until TableParams.COLS) {
+                        val index = row * TableParams.COLS + col
                         styledTd {
                             css {
                                 +AppStyles.tableTdTh

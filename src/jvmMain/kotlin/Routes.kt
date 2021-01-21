@@ -9,21 +9,13 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDate
 import org.litote.kmongo.eq
 
-private fun getTestUserOrNull(link: String?): TestUser? {
-    var testUser: TestUser? = null
-    if (link != null)
-        testUser = users.find { it.link == link }
-    return testUser
-}
 
 internal fun Routing.apiRoute() {
     route(CommonRoutes.API) {
-        route("/{link}") {
+        route("/{id}") {
             route(CommonRoutes.WEEKNOTE) {
                 post {
-                    // val weekNoteList = users.find { it.link == call.parameters["link"]!! }?.weekNoteList
-
-                    val user = Data.collection.findOne(TestUser::link eq call.parameters["link"]!!)
+                    val user = users.findOne(FullUser::_id eq call.parameters["id"]!!)
                     if (user == null) {
                         call.respond(HttpStatusCode.BadRequest)
                     } else {
@@ -33,38 +25,24 @@ internal fun Routing.apiRoute() {
                             call.respond(HttpStatusCode.BadRequest)
                         } else {
                             weekNoteList[weekNote.id] = weekNote
-                            Data.collection.updateOneById(user._id, user)
+                            users.updateOneById(user._id, user)
                             call.respond(HttpStatusCode.OK)
                         }
-
                     }
-//                    if (weekNoteList == null) {
-//                        call.respond(HttpStatusCode.BadRequest)
-//                    } else {
-//                        val weekNote = call.receive<WeekNote>()
-//                        if (weekNote.id >= weekNoteList.size)
-//                            call.respond(HttpStatusCode.BadRequest)
-//                        weekNoteList[weekNote.id] = weekNote
-//                        call.respond(HttpStatusCode.OK)
-//                    }
                 }
             }
-            get(CommonRoutes.TESTUSER) {
-                val link = call.parameters["link"]
-                var user: TestUser? = null
-                if (link != null) {
-                    user = Data.collection.findOne(TestUser::link eq link)
+            get(CommonRoutes.FULLUSER) {
+                val id = call.parameters["id"]
+                var user: FullUser? = null
+                if (id != null) {
+                    user = users.findOneById(id)
                 }
-
                 if (user != null) {
-                    Data.updateTestUserList(user)
-                    Data.collection.updateOneById(user._id, user)
+                    Data.updateFullUserList(user)
+                    users.updateOneById(user._id, user)
                 }
                 call.respond(
-                    user ?: TestUser(
-                        UserInfo("no", "no"),
-                        mutableListOf(), "", "-1"
-                    )
+                    user ?: FullUser(UserInfo("no", "no"), mutableListOf(), "")
                 )
             }
         }
@@ -73,21 +51,19 @@ internal fun Routing.apiRoute() {
             post {
                 val userInfo = call.receive<UserInfo>()
                 var dateOfBirth: LocalDate? = null
-                var isOk = true
+                var isDate = true
                 try {
                     dateOfBirth = userInfo.dateOfBirth.toLocalDate()
                 } catch (e: IllegalArgumentException) {
-                    isOk = false;
+                    isDate = false;
                 }
-                if (!isOk || dateOfBirth!! >= nowDate() || (nowDate().minus(dateOfBirth).years > 100)) {
+                if (!isDate || dateOfBirth!! >= Data.nowDate() || (Data.nowDate() - dateOfBirth).years > MAX_AGE) {
                     call.respondText("invalid date")
                 } else {
-                    val testUser = Data.createTestUser(userInfo)
-
-                    Data.collection.insertOne(testUser)
-
+                    val fullUser = Data.createFullUser(userInfo)
+                    users.insertOne(fullUser)
                     call.respondText(
-                        "127.0.0.1:9090${CommonRoutes.CALENDARS}?link=${testUser.link}"
+                        "http://127.0.0.1:9090${CommonRoutes.CALENDARS}?id=${fullUser._id}"
                     )
                 }
             }
