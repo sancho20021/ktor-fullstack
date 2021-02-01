@@ -1,41 +1,82 @@
 import kotlinx.css.*
+import kotlinx.html.InputType
+import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
+import kotlinx.html.js.onSubmitFunction
+import org.w3c.dom.HTMLTextAreaElement
+import org.w3c.dom.events.Event
 import react.*
-import react.dom.div
-import react.dom.p
+import react.dom.*
 import styled.css
+import styled.styledButton
 import styled.styledDiv
-import styled.styledSpan
+import styled.styledTextArea
 
 external interface TextPopUpProps : RProps {
     var toggle: () -> Unit
+    var initText: String
+    var handleSubmit: (String) -> Unit
+    var readOnly: Boolean
+    var additionalDesc: String
 }
 
-class TextPopUp : RComponent<TextPopUpProps, RState>() {
+val textPopUp = functionalComponent<TextPopUpProps> { props ->
+    val (text, setText) = useState(props.initText)
+    val handleChange: (Event) -> Unit = {
+        if (!props.readOnly)
+            setText((it.target as HTMLTextAreaElement).value)
+    }
 
-    override fun RBuilder.render() {
-        styledDiv {
-            styledDiv {
+    styledDiv {
+        css {
+            position = Position.absolute
+            backgroundColor = Color.white
+            width = 500.px
+            height = 400.px
+        }
+        styledButton {
+            css {
+                position = Position.absolute
+                right = 0.px
+                backgroundColor = Color.pink
+            }
+            attrs.onClickFunction = { props.toggle() }
+            +"X"
+        }
+        form {
+            attrs.onSubmitFunction = {
+                props.handleSubmit(text)
+                props.toggle()
+            }
+            h3 {
+                +"Week description:"
+            }
+            h5 {
+                +props.additionalDesc
+            }
+            styledTextArea {
                 css {
-                    position = Position.absolute
+                    width = LinearDimension("98%")
                 }
-                styledSpan {
-                    css {
-                        color = Color.red
-                    }
-                    attrs.onClickFunction = { props.toggle() }
-                    +"Close"
+                attrs {
+                    placeholder =
+                        if (props.readOnly) "“Yesterday is gone. Tomorrow has not yet come. We have only today. Let us begin.”\n" +
+                                "― Mother Theresa"
+                        else "Tell me what you have done this week"
+                    value = text
+                    onChangeFunction = handleChange
                 }
-                p {
-                    +"I'm a PopUp!!!"
-                }
+            }
+            br {}
+            input(InputType.submit) {
+                attrs.value = "Save"
             }
         }
     }
 }
 
-fun RBuilder.textPopUp(handler: TextPopUpProps.() -> Unit): ReactElement {
-    return child(TextPopUp::class) {
-        this.attrs(handler)
+fun RBuilder.textPopUp(handler: TextPopUpProps.() -> Unit) = child(textPopUp) {
+    attrs {
+        handler()
     }
 }

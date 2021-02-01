@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpack
 val kotlinVersion = "1.4.0"
 val serializationVersion = "1.0.0-RC"
 val ktorVersion = "1.4.0"
+val exposedVersion = "0.28.1"
 
 plugins {
     kotlin("multiplatform") version "1.4.0"
@@ -54,7 +55,6 @@ kotlin {
                 implementation("ch.qos.logback:logback-classic:1.2.3")
                 implementation("io.ktor:ktor-websockets:$ktorVersion")
                 implementation("org.litote.kmongo:kmongo-coroutine-serialization:4.1.1")
-                implementation("io.ktor:ktor-jackson:$ktorVersion")
             }
         }
 
@@ -68,9 +68,12 @@ kotlin {
 
                 implementation("org.jetbrains:kotlin-react:16.13.1-pre.110-kotlin-1.4.0")
                 implementation("org.jetbrains:kotlin-react-dom:16.13.1-pre.110-kotlin-1.4.0")
+                implementation("org.jetbrains:kotlin-styled:1.0.0-pre.113-kotlin-1.4.0")
+                implementation("org.jetbrains:kotlin-react-router-dom:5.2.0-pre.138-kotlin-1.4.10")
+
                 implementation(npm("react", "16.13.1"))
                 implementation(npm("react-dom", "16.13.1"))
-                implementation("org.jetbrains:kotlin-styled:1.0.0-pre.113-kotlin-1.4.0")
+                implementation(npm("react-router-dom", "5.2.0"))
             }
         }
     }
@@ -82,11 +85,11 @@ application {
 
 // include JS artifacts in any JAR we generate
 tasks.getByName<Jar>("jvmJar") {
-    val taskName = if (project.hasProperty("isProduction")) {
+    val taskName = /*if (project.hasProperty("isProduction")) {*/
         "jsBrowserProductionWebpack"
-    } else {
+    /*} else {
         "jsBrowserDevelopmentWebpack"
-    }
+    }*/
     val webpackTask = tasks.getByName<KotlinWebpack>(taskName)
     dependsOn(webpackTask) // make sure JS gets compiled first
     from(File(webpackTask.destinationDirectory, webpackTask.outputFileName)) // bring output file along into the JAR
